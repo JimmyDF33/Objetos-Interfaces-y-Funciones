@@ -1,5 +1,12 @@
 import { stdin, stdout } from 'process';
 
+// 2. Interface Task
+interface Task {
+    id: number;
+    title: string;
+    completed: boolean;
+}
+
 function preguntar(pregunta: string): Promise<string> {
     return new Promise((resolve) => {
         stdout.write(pregunta);
@@ -12,10 +19,51 @@ function preguntar(pregunta: string): Promise<string> {
 }
 
 async function main() {
-    const tareas: string[] = [];
+    // 3. Cambiar el tipado del arreglo principal a Task[] y declarar contador global
+    const tareas: Task[] = [];
+    let nextId: number = 1;
     let continuar: boolean = true;
 
-    console.log("=== GESTOR DE TAREAS INTERACTIVO ===");
+    // 4. Arrow functions para cada acción
+    const addTask = (title: string): void => {
+        if (title !== "") {
+            const nuevaTarea: Task = {
+                id: nextId++,
+                title: title,
+                completed: false
+            };
+            tareas.push(nuevaTarea);
+            console.log(`¡Tarea "${nuevaTarea.title}" agregada con éxito! (ID: ${nuevaTarea.id})`);
+        } else {
+            console.log("El título no puede estar vacío.");
+        }
+    };
+
+    const removeTask = (): void => {
+        if (tareas.length > 0) {
+            const eliminada = tareas.pop();
+            if (eliminada) {
+                console.log(`Eliminada la última tarea: "${eliminada.title}" (ID: ${eliminada.id})`);
+            }
+        } else {
+            console.log("No hay tareas para eliminar.");
+        }
+    };
+
+    const listTasks = (): void => {
+        console.log("\n--- Lista de Tareas ---");
+        if (tareas.length === 0) {
+            console.log("No hay tareas registradas.");
+        } else {
+            for (let i = 0; i < tareas.length; i++) {
+                const t = tareas[i];
+                const estado = t.completed ? "completed" : "pending";
+                console.log(`[${t.id}] ${t.title} - ${estado}`);
+            }
+        }
+    };
+
+    console.log("=== GESTOR DE TAREAS INTERACTIVO (CON INTERFACES) ===");
 
     while (continuar) {
         console.log("\n--- Menú de Opciones ---");
@@ -28,33 +76,16 @@ async function main() {
 
         switch (opcion) {
             case "1": {
-                const nuevaTarea = await preguntar("Escribe el título de la tarea: ");
-                if (nuevaTarea !== "") {
-                    tareas.push(nuevaTarea);
-                    console.log(`¡Tarea "${nuevaTarea}" agregada con éxito!`);
-                } else {
-                    console.log("El título no puede estar vacío.");
-                }
+                const tituloInput = await preguntar("Escribe el título de la tarea: ");
+                addTask(tituloInput);
                 break;
             }
             case "2": {
-                if (tareas.length > 0) {
-                    const eliminada = tareas.pop();
-                    console.log(`Eliminada la última tarea: "${eliminada}"`);
-                } else {
-                    console.log("No hay tareas para eliminar.");
-                }
+                removeTask();
                 break;
             }
             case "3": {
-                console.log("\n--- Lista de Tareas ---");
-                if (tareas.length === 0) {
-                    console.log("No hay tareas registradas.");
-                } else {
-                    for (let i = 0; i < tareas.length; i++) {
-                        console.log(`${i + 1}. ${tareas[i]}`);
-                    }
-                }
+                listTasks();
                 break;
             }
             case "4": {
